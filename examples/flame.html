@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Particular JS Setup</title>
+    <script src="js/particular/core/ParticularPoint2D.js"></script>
+    <script src="js/particular/fields/ParticularLifespanField.js"></script>
+    <script src="js/particular/fields/ParticularEmissionImpulseField.js"></script>
+    <script src="js/particular/fields/ParticularDirectionalSpreadField.js"></script>
+    <script src="js/particular/fields/ParticularGravityField.js"></script>
+    <script src="js/particular/config/ParticularConfigProperties.js"></script>
+    <script src="js/particular/renderContexts/stage/ParticularStageCanvasRenderContext.js"></script>
+    <script src="js/particular/renderContexts/particle/ParticularImageParticleRenderContext.js"></script>
+    <script src="js/particular/ParticularEmitter.js"></script>
+    <script src="js/particular/pool/ParticularObjectPoolNode.js"></script>
+    <script src="js/particular/pool/ParticularObjectPool.js"></script>
+    <script src="js/particular/ParticularParticle.js"></script>
+    <script type="text/javascript">
+        var canvas, context, emitter, emitter2;
+
+        function initApp(){
+            canvas = document.getElementById("mainCanvas");
+            context = canvas.getContext("2d");
+
+            var stageRenderCtx = new ParticularStageCanvasRenderContext(context);
+            var particleRenderCtx = new ParticularImageParticleRenderContext();
+                particleRenderCtx.addPhase({asset:document.getElementById('img1'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img2'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img3'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img4'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img5'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img6'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img6'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img7'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img7'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img7'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img8'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img8'),  alpha:1});
+                particleRenderCtx.addPhase({asset:document.getElementById('img9'),  alpha:1});
+
+            emitter = new ParticularEmitter();
+            emitter.init(
+                    stageRenderCtx, particleRenderCtx,
+                    {   x:canvas.width/2, y:canvas.height-60,
+                        type:ParticularConfigProperties.DIRECTIONAL(),
+                        rate:240, speed:20, angle:270, spread:.25,
+                        lifeSpan:1, lifeSpanRandom:1},
+                    [/*new ParticularGravityField()*/]
+            );
+            emitter.start();
+
+          //tick();
+        }
+
+        function tick(){
+            //window.emitter.rotation += 1;
+            window.requestAnimFrame(tick);
+        }
+
+
+
+    </script>
+</head>
+<body onload="initApp()">
+    <div>
+        <img src="images/flame/1.png" id="img1" style="display:none;" />
+        <img src="images/flame/2.png" id="img2" style="display:none;" />
+        <img src="images/flame/3.png" id="img3" style="display:none;" />
+        <img src="images/flame/4.png" id="img4" style="display:none;" />
+        <img src="images/flame/5.png" id="img5" style="display:none;" />
+        <img src="images/flame/6.png" id="img6" style="display:none;" />
+        <img src="images/flame/7.png" id="img7" style="display:none;" />
+        <img src="images/flame/8.png" id="img8" style="display:none;" />
+        <img src="images/flame/9.png" id="img9" style="display:none;" />
+    </div>
+    <canvas id="mainCanvas" width="600" height="600">
+        Your browser doesn't support canvas...tisk tisk
+    </canvas>
+
+</body>
+</html>
