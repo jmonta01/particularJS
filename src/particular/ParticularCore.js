@@ -1,5 +1,6 @@
 if (window.requestAnimFrame === undefined) {
     window.requestAnimFrame = (function () {
+        "use strict";
         return window.requestAnimationFrame       ||
             window.webkitRequestAnimationFrame ||
             window.mozRequestAnimationFrame    ||
@@ -8,9 +9,10 @@ if (window.requestAnimFrame === undefined) {
             function (callback) {
                 window.setTimeout(callback, 1000 / 60);
             };
-    })();
+    }());
 }
 (function (window) {
+    "use strict";
 //ParticularPoint2D
     function ParticularPoint2D(x, y) {
         this.x = (x !== undefined) ? x : 0;
@@ -44,11 +46,11 @@ if (window.requestAnimFrame === undefined) {
     }
     ParticularEmissionImpulseField.prototype.process = function (life, acceleration, randomSeedX, randomSeedY, angle) {
         if (this.type === ParticularConfigProperties.OMNI()) {
-            acceleration.x = life * this.speed * randomSeedX;
-            acceleration.y = life * this.speed * randomSeedY;
+            acceleration.x = life * this.speed * randomSeedX;    // TODO - fix acceleration algorithm
+            acceleration.y = life * this.speed * randomSeedY;    // TODO - fix acceleration algorithm
         } else {
-            acceleration.x = (life * this.speed * Math.cos(angle * Math.PI / 180)) + (life * randomSeedX * this.spread * this.speed * Math.sin(angle * Math.PI / 180));
-            acceleration.y = (life * this.speed * Math.sin(angle * Math.PI / 180)) + (life * randomSeedY * this.spread * this.speed * Math.cos(angle * Math.PI / 180));
+            acceleration.x = (life * this.speed * Math.cos(angle * Math.PI / 180)) + (life * randomSeedX * this.spread * this.speed * Math.sin(angle * Math.PI / 180)); // TODO - fix acceleration algorithm
+            acceleration.y = (life * this.speed * Math.sin(angle * Math.PI / 180)) + (life * randomSeedY * this.spread * this.speed * Math.cos(angle * Math.PI / 180)); // TODO - fix acceleration algorithm
         }
         return acceleration;
     };
@@ -91,7 +93,7 @@ if (window.requestAnimFrame === undefined) {
     window.ParticularConfigProperties = ParticularConfigProperties;
 
 
-//ParticularConfigProperties
+//ParticularEmitter
     var running = false, emitterContext, fpsCounter = {frames: 0, fps: 60}, impulseField, lifespanField;
     function ParticularEmitter() {
         emitterContext = this;
@@ -116,10 +118,14 @@ if (window.requestAnimFrame === undefined) {
         this.fields = fields;
         lifespanField = new ParticularLifespanField(fpsCounter);
         impulseField = new ParticularEmissionImpulseField(this.properties.speed, this.properties.type, this.properties.spread);
-        this.fields.unshift(lifespanField, impulseField);
-        var buffer = (this.properties.rate * this.properties.speed);
+        if (this.fields) {
+            this.fields.unshift(lifespanField, impulseField);
+        } else {
+            this.fields = [lifespanField, impulseField];
+        }
+        var buffer = (1 / this.properties.lifeSpan) * this.properties.rate;
         this.pool = new ParticularObjectPool();
-        this.pool.populate(particleRenderContext, buffer * this.properties.rate, this.properties);
+        this.pool.populate(particleRenderContext, buffer, this.properties);
         tick();
     };
     ParticularEmitter.prototype.start = function () {
@@ -204,6 +210,48 @@ if (window.requestAnimFrame === undefined) {
     }
     window.ParticularEmitter = ParticularEmitter;
 
+
+//ParticularParticle
+    function ParticularParticle(renderContext) {
+        this.accel = new ParticularPoint2D();
+        this.vel = new ParticularPoint2D();
+        this.coords = new ParticularPoint2D();
+        this.rotation = this.life = 0;
+        this.renderContext = renderContext;
+    }
+    ParticularParticle.prototype.reset = function () {
+        this.accel.x = this.accel.y = this.vel.x = this.vel.y = this.coords.x = this.coords.y = this.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
+    };
+    ParticularParticle.prototype.init = function (props) {
+        this.coords.x = props.coords.x;
+        this.coords.y = props.coords.y;
+        this.maxLife = (props.lifeSpanRandom > 0) ? props.lifeSpan + (Math.random() * props.lifeSpanRandom * props.lifeSpan) : props.lifeSpan;
+        this.randomSeedX = Math.random() * 2 - 1;
+        this.randomSeedY = Math.random() * 2 - 1;
+        this.angle = props.rotation + props.angle;
+        this.renderContext.reset();
+    };
+    ParticularParticle.prototype.update = function (fields) {
+        var i, length = fields.length;
+        for (i = 0; i < length; i++) {
+            if (fields[i] instanceof ParticularLifespanField) {
+                this.life = fields[i].process(this.life, this.maxLife);
+                this.renderContext.updatePhase(this.life);
+            } else if (fields[i] instanceof ParticularEmissionImpulseField) {
+                this.vel = fields[i].process(this.life, this.vel, this.randomSeedX, this.randomSeedY, this.angle);
+                this.vel.x *= 0.5;
+                this.vel.y *= 0.5;
+            } else {
+                this.vel = fields[i].process(this.vel);
+            }
+        }
+        this.coords.x += this.vel.x;
+        this.coords.y += this.vel.y;
+//        this.rotation += this.vel.rotation;
+        return (this.life <= this.maxLife);
+    };
+    window.ParticularParticle = ParticularParticle;
+
 //ParticularObjectPoolNode
     function ParticularObjectPoolNode() {
         this.isValid = false;
@@ -261,44 +309,5 @@ if (window.requestAnimFrame === undefined) {
     };
     window.ParticularObjectPool = ParticularObjectPool;
 
-//ParticularParticle
-    function ParticularParticle(renderContext) {
-        this.accel = new ParticularPoint2D();
-        this.vel = new ParticularPoint2D();
-        this.coords = new ParticularPoint2D();
-        this.rotation = this.life = 0;
-        this.renderContext = renderContext;
-    }
-    ParticularParticle.prototype.reset = function () {
-        this.accel.x = this.accel.y = this.vel.x = this.vel.y = this.coords.x = this.coords.y = this.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
-    };
-    ParticularParticle.prototype.init = function (props) {
-        this.coords.x = props.coords.x;
-        this.coords.y = props.coords.y;
-        this.maxLife = (props.lifeSpanRandom > 0) ? props.lifeSpan + (Math.random() * props.lifeSpanRandom * props.lifeSpan) : props.lifeSpan;
-        this.randomSeedX = Math.random() * 2 - 1;
-        this.randomSeedY = Math.random() * 2 - 1;
-        this.angle = props.rotation + props.angle;
-        this.renderContext.reset();
-    };
-    ParticularParticle.prototype.update = function (fields) {
-        var i, length = fields.length;
-        for (i = 0; i < length; i++) {
-            if (fields[i] instanceof ParticularLifespanField) {
-                this.life = fields[i].process(this.life, this.maxLife);
-                this.renderContext.updatePhase(this.life);
-            } else if (fields[i] instanceof ParticularEmissionImpulseField) {
-                this.vel = fields[i].process(this.life, this.vel, this.randomSeedX, this.randomSeedY, this.angle);
-                this.vel.x *= 0.5;
-                this.vel.y *= 0.5;
-            } else {
-                this.vel = fields[i].process(this.vel);
-            }
-        }
-        this.coords.x += this.vel.x;
-        this.coords.y += this.vel.y;
-        return (this.life <= this.maxLife);
-    };
-    window.ParticularParticle = ParticularParticle;
 
-})(window);
+}(window));

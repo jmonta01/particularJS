@@ -1,7 +1,7 @@
 (function (window) {
 //ParticularGravityField
     function ParticularGravityField(amount, vector) {
-        this.amount = (amount !== undefined) ? amount : 1.79;
+        this.amount = (amount !== undefined) ? amount : 0.25;
         this.vector = (vector !== undefined) ? vector : ParticularPoint2D.Y_VEC();
     }
     ParticularGravityField.prototype.process = function (coords) {
@@ -17,4 +17,4 @@
     };
     window.ParticularGravityField = ParticularGravityField;
 
-})(window);
+}(window));

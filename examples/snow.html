@@ -1,42 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Particular JS Setup</title>
+    <title>Snow</title>
     <script src="js/particular/ParticularContexts.min.js"></script>
     <script src="js/particular/ParticularExts.min.js"></script>
     <script src="js/particular/ParticularCore.min.js"></script>
     <script type="text/javascript">
         var canvas, context, emitter, emitter2;
-
         function initApp(){
             canvas = document.getElementById("mainCanvas");
             context = canvas.getContext("2d");
-
             var stageRenderCtx = new ParticularStageCanvasRenderContext(context);
             var particleRenderCtx = new ParticularImageParticleRenderContext();
             particleRenderCtx.addPhase({asset:document.getElementById('img1'),  alpha:1});
-            particleRenderCtx.addPhase({asset:document.getElementById('img2'),  alpha:1});
             emitter = new ParticularEmitter();
             emitter.init(
                     stageRenderCtx, particleRenderCtx,
-                    {   x:canvas.width/4, y:0,
+                    {   x:-50, y:-50,
                         type:ParticularConfigProperties.OMNI(),
-                        rate:60, speed:5, angle:90, spread:1,
-                        lifeSpan:4, lifeSpanRandom:1},
-                    [/*new ParticularGravityField()*/]
+                        rate:120, speed:1, angle:45, spread:1,
+                        lifeSpan:15, lifeSpanRandom:1}
             );
             emitter.start();
-
         }
-
-
-
     </script>
 </head>
 <body onload="initApp()">
 <div>
-    <img src="images/snow/snow1.png" id="img1" style="display:none;" />
-    <img src="images/snow/snow2.png" id="img2" style="display:none;" />
+    <img src="images/snowflake.png" id="img1" style="display:none;" />
 </div>
 <canvas id="mainCanvas" width="600" height="600">
     Your browser doesn't support canvas...tisk tisk

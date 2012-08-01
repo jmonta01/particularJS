@@ -1,11 +1,11 @@
 (function (window) {
 //ParticularStageCanvasRenderContext
+    "use strict";
     function ParticularStageCanvasRenderContext(stage) {
         this.stage = stage;
     }
     ParticularStageCanvasRenderContext.prototype.clear = function () {
-        this.stage.fillStyle = "#000000";
-        this.stage.fillRect(0, 0, 800, 800);
+        this.stage.clearRect(0, 0, 800, 800);
     };
     ParticularStageCanvasRenderContext.prototype.render = function (node) {
         if (node.renderContext.activeAsset !== undefined) {
@@ -44,4 +44,4 @@
     };
     window.ParticularImageParticleRenderContext = ParticularImageParticleRenderContext;
 
-})(window);
+}(window));
