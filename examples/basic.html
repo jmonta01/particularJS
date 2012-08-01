@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Particular JS Setup</title>
+    <script src="js/particular/ParticularContexts.min.js"></script>
+    <script src="js/particular/ParticularExts.min.js"></script>
+    <script src="js/particular/ParticularCore.min.js"></script>
+    <script type="text/javascript">
+        var canvas, context, emitter, emitter2;
+
+        function initApp(){
+            canvas = document.getElementById("mainCanvas");
+            context = canvas.getContext("2d");
+
+            var stageRenderCtx = new ParticularStageCanvasRenderContext(context);
+            var particleRenderCtx = new ParticularImageParticleRenderContext();
+            particleRenderCtx.addPhase({asset:document.getElementById('img1'),  alpha:1});
+            emitter = new ParticularEmitter();
+            emitter.init(
+                    stageRenderCtx, particleRenderCtx,
+                    {   x:canvas.width/2, y:canvas.height/2,
+                        type:ParticularConfigProperties.DIRECTIONAL(),
+                        rate:240, speed:15, angle:90, spread:.5,
+                        lifeSpan:1, lifeSpanRandom:1},
+                    [/*new ParticularGravityField()*/]
+            );
+            emitter.start();
+
+            tick();
+        }
+
+        function tick(){
+            window.emitter.rotation += 1;
+            window.requestAnimFrame(tick);
+        }
+
+
+
+    </script>
+</head>
+<body onload="initApp()">
+<div>
+    <img src="images/dot.png" id="img1" style="display:none;" />
+</div>
+<canvas id="mainCanvas" width="600" height="600">
+    Your browser doesn't support canvas...tisk tisk
+</canvas>
+
+</body>
+</html>
