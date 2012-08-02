@@ -6,7 +6,7 @@
     <script src="js/particular/ParticularExts.min.js"></script>
     <script src="js/particular/ParticularCore.min.js"></script>
     <script type="text/javascript">
-        var canvas, context, emitter, emitter2;
+        var canvas, context, emitter;
         function initApp(){
             canvas = document.getElementById("mainCanvas");
             context = canvas.getContext("2d");
@@ -16,10 +16,14 @@
             emitter = new ParticularEmitter();
             emitter.init(
                     stageRenderCtx, particleRenderCtx,
-                    {   x:-50, y:-50,
-                        type:ParticularConfigProperties.OMNI(),
-                        rate:120, speed:1, angle:45, spread:1,
-                        lifeSpan:15, lifeSpanRandom:1}
+                    {   x:-100, y:-100,
+                        type:ParticularConfigProperties.DIRECTIONAL(),
+                        rate:200, speed:5, angle:45, spread:1,
+                        lifeSpan:10, lifeSpanRandom:1
+                    },
+                    [
+                        new ParticularFrictionField(.99,.99)
+                    ]
             );
             emitter.start();
         }

@@ -6,7 +6,7 @@
     <script src="js/particular/ParticularExts.min.js"></script>
     <script src="js/particular/ParticularCore.min.js"></script>
     <script type="text/javascript">
-        var canvas, context, emitter, emitter2;
+        var canvas, context, emitter;
 
         function initApp(){
             canvas = document.getElementById("mainCanvas");
@@ -33,9 +33,8 @@
                     stageRenderCtx, particleRenderCtx,
                     {   x:canvas.width/2, y:canvas.height-60,
                         type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:240, speed:20, angle:270, spread:.25,
-                        lifeSpan:1, lifeSpanRandom:1},
-                    [/*new ParticularGravityField()*/]
+                        rate:500, speed:4, angle:-90, spread:.3,
+                        lifeSpan:1, lifeSpanRandom:1}
             );
             emitter.start();
 

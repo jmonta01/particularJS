@@ -18,6 +18,14 @@ if (window.requestAnimFrame === undefined) {
         this.x = (x !== undefined) ? x : 0;
         this.y = (y !== undefined) ? y : 0;
     }
+    ParticularPoint2D.prototype.add = function (point) {
+        this.x += point.x;
+        this.y += point.y;
+    };
+    ParticularPoint2D.prototype.subtract = function (point) {
+        this.x -= point.x;
+        this.y -= point.y;
+    };
     ParticularPoint2D.prototype.toString = function () {
         return "x: " + this.x + ", y: " + this.y;
     };
@@ -33,7 +41,7 @@ if (window.requestAnimFrame === undefined) {
         this.fpsCounter = fpsCounter;
     }
     ParticularLifespanField.prototype.process = function (life, maxLife) {
-        life +=  (maxLife / this.fpsCounter.fps) / 2;
+        life +=  (maxLife / this.fpsCounter.fps) * .5;
         return life;
     };
     window.ParticularLifespanField = ParticularLifespanField;
@@ -44,13 +52,13 @@ if (window.requestAnimFrame === undefined) {
         this.type = type;
         this.spread = spread;
     }
-    ParticularEmissionImpulseField.prototype.process = function (life, acceleration, randomSeedX, randomSeedY, angle) {
+    ParticularEmissionImpulseField.prototype.process = function (acceleration, randomSeed, angle) {
         if (this.type === ParticularConfigProperties.OMNI()) {
-            acceleration.x = life * this.speed * randomSeedX;    // TODO - fix acceleration algorithm
-            acceleration.y = life * this.speed * randomSeedY;    // TODO - fix acceleration algorithm
+            acceleration.x = Math.cos((randomSeed.x * 360) * Math.PI / 180) * this.speed;
+            acceleration.y = Math.sin((randomSeed.y * 360) * Math.PI / 180) * this.speed;
         } else {
-            acceleration.x = (life * this.speed * Math.cos(angle * Math.PI / 180)) + (life * randomSeedX * this.spread * this.speed * Math.sin(angle * Math.PI / 180)); // TODO - fix acceleration algorithm
-            acceleration.y = (life * this.speed * Math.sin(angle * Math.PI / 180)) + (life * randomSeedY * this.spread * this.speed * Math.cos(angle * Math.PI / 180)); // TODO - fix acceleration algorithm
+            acceleration.x = Math.cos((angle + (this.spread * randomSeed.x * 90)) * Math.PI / 180) * this.speed;
+            acceleration.y = Math.sin((angle + (this.spread * randomSeed.y * 90))  * Math.PI / 180) * this.speed;
         }
         return acceleration;
     };
@@ -213,21 +221,24 @@ if (window.requestAnimFrame === undefined) {
 
 //ParticularParticle
     function ParticularParticle(renderContext) {
+        this.randomSeed = new ParticularPoint2D();
         this.accel = new ParticularPoint2D();
         this.vel = new ParticularPoint2D();
         this.coords = new ParticularPoint2D();
         this.rotation = this.life = 0;
         this.renderContext = renderContext;
+        this.fired = false;
     }
     ParticularParticle.prototype.reset = function () {
-        this.accel.x = this.accel.y = this.vel.x = this.vel.y = this.coords.x = this.coords.y = this.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
+        this.fired = false;
+        this.randomSeed.x = this.randomSeed.y = this.accel.x = this.accel.y = this.vel.x = this.vel.y = this.coords.x = this.coords.y = this.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
     };
     ParticularParticle.prototype.init = function (props) {
         this.coords.x = props.coords.x;
         this.coords.y = props.coords.y;
         this.maxLife = (props.lifeSpanRandom > 0) ? props.lifeSpan + (Math.random() * props.lifeSpanRandom * props.lifeSpan) : props.lifeSpan;
-        this.randomSeedX = Math.random() * 2 - 1;
-        this.randomSeedY = Math.random() * 2 - 1;
+        this.randomSeed.x = Math.random() * 2 - 1;
+        this.randomSeed.y = Math.random() * 2 - 1;
         this.angle = props.rotation + props.angle;
         this.renderContext.reset();
     };
@@ -236,17 +247,21 @@ if (window.requestAnimFrame === undefined) {
         for (i = 0; i < length; i++) {
             if (fields[i] instanceof ParticularLifespanField) {
                 this.life = fields[i].process(this.life, this.maxLife);
-                this.renderContext.updatePhase(this.life);
+                this.renderContext.updatePhase(this.life, this.maxLife);
             } else if (fields[i] instanceof ParticularEmissionImpulseField) {
-                this.vel = fields[i].process(this.life, this.vel, this.randomSeedX, this.randomSeedY, this.angle);
-                this.vel.x *= 0.5;
-                this.vel.y *= 0.5;
+                if (this.fired === false) {
+                    this.accel = fields[i].process(this.accel, this.randomSeed, this.angle);
+                    this.fired = true;
+                } else {
+                    this.accel.x = this.accel.y = 0;
+                }
+                this.vel.add(this.accel);
             } else {
                 this.vel = fields[i].process(this.vel);
             }
         }
-        this.coords.x += this.vel.x;
-        this.coords.y += this.vel.y;
+        this.coords.add(this.vel);
+
 //        this.rotation += this.vel.rotation;
         return (this.life <= this.maxLife);
     };

@@ -20,9 +20,8 @@
                     stageRenderCtx, particleRenderCtx,
                     {   x:canvas.width/2, y:canvas.height/2,
                         type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:240, speed:15, angle:90, spread:.5,
-                        lifeSpan:2, lifeSpanRandom:1},
-                    [/*new ParticularGravityField()*/]
+                        rate:750, speed:5, angle:90, spread:.125,
+                        lifeSpan:2, lifeSpanRandom:1}
             );
             emitter.start();
 
@@ -30,7 +29,7 @@
         }
 
         function tick(){
-            window.emitter.rotation += 1;
+            window.emitter.rotation += 10;
             window.requestAnimFrame(tick);
         }
 

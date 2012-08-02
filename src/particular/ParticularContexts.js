@@ -5,7 +5,7 @@
         this.stage = stage;
     }
     ParticularStageCanvasRenderContext.prototype.clear = function () {
-        this.stage.clearRect(0, 0, 800, 800);
+        this.stage.clearRect(0, 0, this.stage.canvas.width, this.stage.canvas.height);
     };
     ParticularStageCanvasRenderContext.prototype.render = function (node) {
         if (node.renderContext.activeAsset !== undefined) {
@@ -35,8 +35,8 @@
         this.activeAsset = this.phases[0].asset;
         this.alpha = this.phases[0].alpha;
     };
-    ParticularImageParticleRenderContext.prototype.updatePhase = function (life) {
-        var activePhase = this.phases[Math.floor(this.phases.length * life)];
+    ParticularImageParticleRenderContext.prototype.updatePhase = function (life, maxLife) {
+        var activePhase = this.phases[Math.floor(this.phases.length * life / maxLife)];
         if (activePhase) {
             this.activeAsset = activePhase.asset;
             this.alpha = activePhase.alpha;

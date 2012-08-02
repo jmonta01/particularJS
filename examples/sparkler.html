@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Sparkler</title>
-    <script src="js/particular/ParticularContexts.min.js"></script>
-    <script src="js/particular/ParticularExts.min.js"></script>
-    <script src="js/particular/ParticularCore.min.js"></script>
+    <script src="../src/particular/ParticularContexts.js"></script>
+    <script src="../src/particular/ParticularExts.js"></script>
+    <script src="../src/particular/ParticularCore.js"></script>
     <script type="text/javascript">
-        var canvas, context, emitter, emitter2;
+        var canvas, context, emitter;
 
         function initApp(){
             canvas = document.getElementById("mainCanvas");
@@ -14,22 +14,28 @@
 
             var stageRenderCtx = new ParticularStageCanvasRenderContext(context);
             var particleRenderCtx = new ParticularImageParticleRenderContext();
-            particleRenderCtx.addPhase({asset:document.getElementById('a4'),  alpha:.1});
+            particleRenderCtx.addPhase({asset:document.getElementById('a1'),  alpha:1});
+            particleRenderCtx.addPhase({asset:document.getElementById('a3'),  alpha:1});
+            particleRenderCtx.addPhase({asset:document.getElementById('a1'),  alpha:.5});
+            particleRenderCtx.addPhase({asset:document.getElementById('a1'),  alpha:1});
+            particleRenderCtx.addPhase({asset:document.getElementById('a4'),  alpha:.7});
             particleRenderCtx.addPhase({asset:document.getElementById('a3'),  alpha:.5});
             particleRenderCtx.addPhase({asset:document.getElementById('a2'),  alpha:.2});
-            particleRenderCtx.addPhase({asset:document.getElementById('a1'),  alpha:.7});
             emitter = new ParticularEmitter();
             emitter.init(
                     stageRenderCtx, particleRenderCtx,
                     {   x:canvas.width/2, y:canvas.height/2,
-                        type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:240, speed:5, angle:0, spread:1,
-                        lifeSpan:.5, lifeSpanRandom:1},
-                    [new ParticularGravityField(.5, ParticularPoint2D.Y_VEC())]
+                        type:ParticularConfigProperties.OMNI(),
+                        rate:750, speed:5, angle:-90, spread:.5,
+                        lifeSpan:10, lifeSpanRandom:1},
+                    [
+                        new ParticularGravityField(.1, ParticularPoint2D.Y_VEC()),
+                        new ParticularFrictionField(1, 1)
+                    ]
             );
             emitter.start();
 
-            tick();
+           // tick();
         }
         function tick(){
             window.emitter.rotation += 10;
@@ -49,7 +55,7 @@
     <img src="images/sparkler/3.png" id="a3" style="display:none;" />
     <img src="images/sparkler/4.png" id="a4" style="display:none;" />
 </div>
-<canvas id="mainCanvas" width="600" height="600">
+<canvas id="mainCanvas" width="1000" height="600">
     Your browser doesn't support canvas...tisk tisk
 </canvas>
 
