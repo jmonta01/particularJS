@@ -18,12 +18,9 @@
                     stageRenderCtx, particleRenderCtx,
                     {   x:-100, y:-100,
                         type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:200, speed:5, angle:45, spread:1,
-                        lifeSpan:10, lifeSpanRandom:1
-                    },
-                    [
-                        new ParticularFrictionField(.99,.99)
-                    ]
+                        rate:20, speed:.5, angle:45, spread:1,
+                        lifeSpan:20, lifeSpanRandom:1
+                    }
             );
             emitter.start();
         }
@@ -33,7 +30,7 @@
 <div>
     <img src="images/snowflake.png" id="img1" style="display:none;" />
 </div>
-<canvas id="mainCanvas" width="600" height="600">
+<canvas id="mainCanvas" width="1000" height="600">
     Your browser doesn't support canvas...tisk tisk
 </canvas>
 

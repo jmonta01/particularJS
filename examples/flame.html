@@ -33,17 +33,10 @@
                     stageRenderCtx, particleRenderCtx,
                     {   x:canvas.width/2, y:canvas.height-60,
                         type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:500, speed:4, angle:-90, spread:.3,
-                        lifeSpan:1, lifeSpanRandom:1}
+                        rate:750, speed:2, angle:-90, spread:.6,
+                        lifeSpan:3, lifeSpanRandom:1}
             );
             emitter.start();
-
-          //tick();
-        }
-
-        function tick(){
-            //window.emitter.rotation += 1;
-            window.requestAnimFrame(tick);
         }
     </script>
     <style>
@@ -64,7 +57,7 @@
         <img src="images/flame/8.png" id="img8" style="display:none;" />
         <img src="images/flame/9.png" id="img9" style="display:none;" />
     </div>
-    <canvas id="mainCanvas" width="600" height="600">
+    <canvas id="mainCanvas" width="1000" height="600">
         Your browser doesn't support canvas...tisk tisk
     </canvas>
 
