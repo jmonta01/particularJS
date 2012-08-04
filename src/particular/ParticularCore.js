@@ -52,9 +52,9 @@ if (window.requestAnimFrame === undefined) {
         this.type = type;
         this.spread = spread;
     }
-    ParticularEmissionImpulseField.prototype.process = function (acceleration, randomSeed, initAngle, maxlife) {
+    ParticularEmissionImpulseField.prototype.process = function (acceleration, accelerationSeed, randomSeed, initAngle) {
         var angle = Math.random() * Math.PI * 2;
-        var radius = maxlife * this.speed * 0.5;
+        var radius = this.speed +  randomSeed.x * accelerationSeed;
 
         if (this.type === ParticularConfigProperties.OMNI()) {
             acceleration.x = Math.cos(angle) * radius;
@@ -88,6 +88,7 @@ if (window.requestAnimFrame === undefined) {
     ParticularConfigProperties.prototype.rate = 60;
     ParticularConfigProperties.prototype.angle = 0;
     ParticularConfigProperties.prototype.speed = 1;
+    ParticularConfigProperties.prototype.speedRandom = 0;
     ParticularConfigProperties.prototype.spread = 0;
     ParticularConfigProperties.prototype.lastEmit = 0;
     ParticularConfigProperties.prototype.lifeSpan = 1;
@@ -100,6 +101,7 @@ if (window.requestAnimFrame === undefined) {
         if (overrides.rate !== undefined) { this.rate = overrides.rate; }
         if (overrides.angle !== undefined) { this.angle = overrides.angle; }
         if (overrides.speed !== undefined) { this.speed = overrides.speed; }
+        if (overrides.speedRandom !== undefined) { this.speedRandom = overrides.speedRandom; }
         if (overrides.spread !== undefined) { this.spread = overrides.spread; }
         if (overrides.lifeSpan !== undefined) { this.lifeSpan = overrides.lifeSpan; }
         if (overrides.lifeSpanRandom !== undefined) { this.lifeSpanRandom = overrides.lifeSpanRandom; }
@@ -243,22 +245,12 @@ if (window.requestAnimFrame === undefined) {
     ParticularParticle.prototype.init = function (props) {
         this.coords.x = props.coords.x;
         this.coords.y = props.coords.y;
+        this.speedRandom = props.speedRandom;
         this.maxLife = (props.lifeSpanRandom > 0) ? props.lifeSpan + (Math.random() * props.lifeSpanRandom * props.lifeSpan) : props.lifeSpan;
-//        this.randomSeed = this.getDistributedPoint(props.coords, this.maxLife * props.speed, props.angle,  90 * props.spread);
-        this.randomSeed.x = Math.random() * 2 - 1;
-        this.randomSeed.y = Math.random() * 2 - 1;
+        this.randomSeed.x = Math.random();
+        this.randomSeed.y = Math.random();
         this.angle = props.rotation + props.angle;
         this.renderContext.reset();
-    };
-    ParticularParticle.prototype.getDistributedPoint = function (coords, r, sa, arc) {
-        var startR = (sa - arc / 2) * Math.PI / 180;
-        var incA = arc / (arc / 360 * Math.PI * Math.pow(r, 2));
-        var incR = incA * Math.PI / 180;
-
-        var retPoint = new ParticularPoint2D();
-        retPoint.x = coords.x + Math.sin(startR) * r;
-        retPoint.y = coords.y * Math.cos(startR) * r;
-        return retPoint;
     };
     ParticularParticle.prototype.update = function (fields) {
         var i, length = fields.length;
@@ -268,7 +260,7 @@ if (window.requestAnimFrame === undefined) {
                 this.renderContext.updatePhase(this.life, this.maxLife);
             } else if (fields[i] instanceof ParticularEmissionImpulseField) {
                 if (this.fired === false) {
-                    this.accel = fields[i].process(this.accel, this.randomSeed, this.angle, this.maxLife);
+                    this.accel = fields[i].process(this.accel, this.speedRandom, this.randomSeed, this.angle, this.maxLife);
                     this.fired = true;
                 } else {
                     this.accel.x = this.accel.y = 0;

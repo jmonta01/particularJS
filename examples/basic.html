@@ -18,28 +18,18 @@
             emitter = new ParticularEmitter();
             emitter.init(
                     stageRenderCtx, particleRenderCtx,
-                    {   x:canvas.width/2, y:canvas.height/2,
+                    {   x:40, y:canvas.height/2,
                         type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:750, speed:5, angle:90, spread:.125,
-                        lifeSpan:2, lifeSpanRandom:1}
+                        rate:1000, speed:2, angle:0, spread:.5,
+                        lifeSpan:5, lifeSpanRandom:1}
             );
             emitter.start();
-
-            tick();
         }
-
-        function tick(){
-            window.emitter.rotation += 10;
-            window.requestAnimFrame(tick);
-        }
-
-
-
     </script>
 </head>
 <body onload="initApp()">
 <div>
-    <img src="images/dot.png" id="img1" style="display:none;" />
+    <img src="images/dot.png" id="img1" />
 </div>
 <canvas id="mainCanvas" width="1000" height="600">
     Your browser doesn't support canvas...tisk tisk

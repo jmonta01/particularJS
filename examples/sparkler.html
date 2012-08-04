@@ -4,12 +4,22 @@
     <title>Sparkler</title>
     <script src="js/particular/ParticularContexts.min.js"></script>
     <script src="js/particular/ParticularExts.min.js"></script>
-    <script src="js/particular/ParticularCore.min.js"></script>
+    <script src="../src/particular/ParticularCore.js"></script>
     <script type="text/javascript">
-        var canvas, context, emitter;
+        var canvas, context, emitter, dragging = false;
 
         function initApp(){
             canvas = document.getElementById("mainCanvas");
+
+            canvas.addEventListener('mousemove', function(evt) {
+                if(dragging){
+                    var mousePos = getMousePos(canvas, evt);
+                    emitter.x = mousePos.x;
+                    emitter.y = mousePos.y;
+                }
+            }, false);
+
+
             context = canvas.getContext("2d");
 
             var stageRenderCtx = new ParticularStageCanvasRenderContext(context);
@@ -24,17 +34,33 @@
             emitter = new ParticularEmitter();
             emitter.init(
                     stageRenderCtx, particleRenderCtx,
-                    {   x:canvas.width/2, y:canvas.height/2 - 100,
+                    {   x:canvas.width/2, y:100,
                         type:ParticularConfigProperties.OMNI(),
-                        rate:1000, speed:3, angle:-90, spread:1,
-                        lifeSpan:4, lifeSpanRandom:1},
+                        rate:1500, speed:2, speedRandom:1, angle:-90, spread:1,
+                        lifeSpan:2, lifeSpanRandom:1},
                     [
-                        new ParticularGravityField(0.4, ParticularPoint2D.Y_VEC()),
-                        new ParticularFrictionField(0.97, 0.97)
+                        new ParticularGravityField(0.1, ParticularPoint2D.Y_VEC())
                     ]
             );
             emitter.start();
         }
+
+        function handleClick(){
+            dragging = !dragging;
+        }
+
+        function getMousePos(canvas, evt) {
+            var rect = canvas.getBoundingClientRect(), root = document.documentElement;
+
+            // return relative mouse position
+            var mouseX = evt.clientX - rect.top - root.scrollTop;
+            var mouseY = evt.clientY - rect.left - root.scrollLeft;
+            return {
+                x: mouseX,
+                y: mouseY
+            };
+        }
+
     </script>
     <style>
         body{
@@ -49,7 +75,7 @@
     <img src="images/sparkler/3.png" id="a3" />
     <img src="images/sparkler/4.png" id="a4" />
 </div>
-<canvas id="mainCanvas" width="1000" height="600">
+<canvas id="mainCanvas" width="1000" height="600" onclick="handleClick()">
     Your browser doesn't support canvas...tisk tisk
 </canvas>
 
