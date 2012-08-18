@@ -1,0 +1,32 @@
+loop lifefields
+	if ParticularLifespanField
+		this.life = ParticularLifespanField.process(this.life, this.maxLife);
+		renderContext.updatePhase(this.life, this.maxLife);
+	end
+end
+
+
+
+loop accfields	
+	if !fired
+		this.accel = ParticularEmissionImpulseField.process(this.accel, this.speedRandom, this.randomSeed, this.angle, this.maxLife);
+		fired = true
+	else
+		this.accel = accfield.process(this.accel, this.coords)
+	end
+end
+
+
+this.vel.add(this.accel)
+this.accel.reset()
+
+
+
+loop velfields
+	this.vel = velfield.process(this.vel, this.coords)
+end
+
+
+
+this.coords.add(this.vel)
+this.vel.reset()

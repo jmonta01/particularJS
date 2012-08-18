@@ -4,7 +4,7 @@
     <title>Particular JS Setup</title>
     <script src="js/particular/ParticularContexts.min.js"></script>
     <script src="js/particular/ParticularExts.min.js"></script>
-    <script src="js/particular/ParticularCore.min.js"></script>
+    <script src="../src/particular/ParticularCore.js"></script>
     <script type="text/javascript">
         var canvas, context, emitter, emitter2;
 
@@ -25,8 +25,8 @@
                     stageRenderCtx, particleRenderCtx,
                     {   x:canvas.width/2, y:canvas.height/2,
                         type:ParticularConfigProperties.DIRECTIONAL(),
-                        rate:1000, speed:2, angle:90, spread:.25,
-                        lifeSpan:5, lifeSpanRandom:1}
+                        rate:400, speed:3, angle:90, spread:.25,
+                        lifeSpan:3, lifeSpanRandom:1}
             );
             emitter.start();
             tick();

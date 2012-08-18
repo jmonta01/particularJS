@@ -10,14 +10,16 @@
     ParticularStageCanvasRenderContext.prototype.render = function (node) {
         if (node.renderContext.activeAsset !== undefined) {
             var angle = node.rotation * Math.PI / 180;
+            var x = (node.coords.x) | 0; //(0.5 + node.coords.x) << 0;
+            var y = (node.coords.y) | 0; //(0.5 + node.coords.y) << 0;
             this.stage.globalAlpha = node.renderContext.alpha;
-            this.stage.translate(node.coords.x, node.coords.y);
+            this.stage.translate(x, y);
             this.stage.rotate(angle);
             if (node.renderContext instanceof ParticularImageParticleRenderContext) {
                 this.stage.drawImage(node.renderContext.activeAsset, 0, 0);
             }
             this.stage.rotate(-angle);
-            this.stage.translate(-node.coords.x, -node.coords.y);
+            this.stage.translate(-x, -y);
             this.stage.globalAlpha = 1;
         }
     };
