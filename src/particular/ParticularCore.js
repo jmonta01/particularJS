@@ -151,26 +151,7 @@ if (window.requestAnimFrame === undefined) {
     function tick() {
         calcFPS();
         if (running === true && fpsCounter.fps > 0) {
-            
-/*
-            var count, interval = 1 / fpsCounter.fps, rate = 1 / emitterContext.properties.rate;
-            if (Date.now() - emitterContext.properties.lastEmit > rate * 1000) {
-                count = Math.floor(interval / rate);
-                if (count > 0) {
-                    while (count > 0) {
-                        append();
-                        count -= 1;
-                    }
-                } else {
-                    append();
-                }
-                emitterContext.properties.lastEmit = Date.now();
-            }
-*/
-
             var count, interval = 1 / fpsCounter.fps, count = emitterContext.properties.rate / fpsCounter.fps;
- //           if (Date.now() - emitterContext.properties.lastEmit >  interval) {
-              //  count = Math.floor(interval / rate);
                 if (count > 0) {
                     while (count > 0) {
                         append();
@@ -179,10 +160,6 @@ if (window.requestAnimFrame === undefined) {
                 } else {
                     append();
                 }
-//               emitterContext.properties.lastEmit = Date.now();
-//            }
-
-
 
         }
         update(interval*1000);
