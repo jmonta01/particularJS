@@ -14,23 +14,26 @@ if (window.requestAnimFrame === undefined) {
 (function (window) {
     "use strict";
 //ParticularPoint2D
-    function ParticularPoint2D(x, y) {
+    function ParticularPoint2D(x, y, rotation) {
         this.x = (x !== undefined) ? x : 0;
         this.y = (y !== undefined) ? y : 0;
+        this.rotation = (rotation !== undefined) ? rotation : 0;
     }
     ParticularPoint2D.prototype.add = function (point) {
         this.x += point.x;
         this.y += point.y;
+        this.rotation += point.rotation;
     };
     ParticularPoint2D.prototype.subtract = function (point) {
         this.x -= point.x;
         this.y -= point.y;
+        this.rotation -= point.rotation;
     };
     ParticularPoint2D.prototype.toString = function () {
-        return "x: " + this.x + ", y: " + this.y;
+        return "x: " + this.x + ", y: " + this.y+ ", rotation: " + this.rotation;
     };
     ParticularPoint2D.prototype.clone = function () {
-        return new ParticularPoint2D(this.x, this.y);
+        return new ParticularPoint2D(this.x, this.y, this.rotation);
     };
     ParticularPoint2D.X_VEC = function () { return "x"; };
     ParticularPoint2D.Y_VEC = function () { return "y"; };
@@ -87,17 +90,33 @@ if (window.requestAnimFrame === undefined) {
         this.__defineGetter__('spread', function () { return this.properties.spread; });
         this.__defineSetter__('spread', function (val) { this.properties.spread = val; });
     }
-    ParticularEmitter.prototype.init = function (stageRenderContext, particleRenderContext, config, fields) {
+    ParticularEmitter.prototype.init = function (stageRenderContext, particleRenderContext, config, userFields) {
         this.renderContext = stageRenderContext;
         this.properties.override(config);
         this.properties.fpsCounter = fpsCounter;
-        this.fields = fields;
         lifespanField = new ParticularLifespanField(fpsCounter);
         impulseField = new ParticularEmissionImpulseField(this.properties.speed, this.properties.type, this.properties.spread);
-        if (this.fields) {
-            this.fields.unshift(lifespanField, impulseField);
-        } else {
-            this.fields = [lifespanField, impulseField];
+        this.fields = {
+            lifeFields: [lifespanField],
+            accFields: [impulseField],
+            velFields: [],
+        }
+        if(userFields) {
+            while(userFields.length > 0){
+                var field = userFields.pop();
+                switch(field.type){
+                    case ParticularFieldTypeLife():
+                            this.fields.lifeFields.push(field);
+                        break;
+                    case ParticularFieldTypeLAcc():
+                            this.fields.accFields.push(field);
+                        break;
+                    case ParticularFieldTypeVel():
+                            this.fields.velFields.push(field);
+                        break;
+                }
+
+            }
         }
         var buffer = this.properties.lifeSpan * this.properties.rate * 2;
         this.pool = new ParticularObjectPool();
@@ -191,13 +210,13 @@ if (window.requestAnimFrame === undefined) {
         this.accel = new ParticularPoint2D();
         this.vel = new ParticularPoint2D();
         this.coords = new ParticularPoint2D();
-        this.rotation = this.life = 0;
+        this.life = 0;
         this.renderContext = renderContext;
         this.fired = false;
     }
     ParticularParticle.prototype.reset = function () {
         this.fired = false;
-        this.randomSeed.x = this.randomSeed.y = this.accel.x = this.accel.y = this.vel.x = this.vel.y = this.coords.x = this.coords.y = this.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
+        this.randomSeed.x = this.randomSeed.y = this.accel.x = this.accel.y = this.accel.rotation = this.vel.x = this.vel.y = this.vel.rotation = this.coords.x = this.coords.y = this.coords.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
     };
     ParticularParticle.prototype.init = function (props) {
         this.coords.x = props.coords.x;
@@ -211,33 +230,50 @@ if (window.requestAnimFrame === undefined) {
         this.renderContext.reset();
     };
     ParticularParticle.prototype.update = function (fields, time) {
-        var i, field, length = fields.length;
-        for (i = 0; i < length; i++) {
-            field = fields[i];
+        var i, field, 
+        lifeFields = fields.lifeFields, lifeFieldsLength = lifeFields.length,
+        accFields = fields.accFields, accFieldsLength = accFields.length, 
+        velFields = fields.velFields, velFieldsLength = velFields.length;
+        for(i = 0; i < lifeFieldsLength; i++){
+            field = lifeFields[i];
             if (field instanceof ParticularLifespanField) {
                 this.life = field.process(this.life, time);
-                this.renderContext.updatePhase(this.life, this.maxLife);
-            } else if (field instanceof ParticularEmissionImpulseField) {
+            }else{
+                //process user life fields if any
+            }
+        }
+        this.renderContext.updatePhase(this.life, this.maxLife);
+        for(i = 0; i < accFieldsLength; i++){
+            field = accFields[i];
+            if (field instanceof ParticularEmissionImpulseField) {
                 if (this.fired === false) {
                     this.accel = field.process(this.accel, this.speedRandom, this.randomSeed, this.angle, this.maxLife);
                     this.fired = true;
                 } else {
                     this.accel.x = this.accel.y = 0;
-                }
-                this.vel.add(this.accel);
-            } else {
-                this.vel = field.process(this.vel);
+                }                
+            }else{
+                this.accel = field.process(this.accel, this.coords);
             }
         }
+        this.vel.add(this.accel);
+        for(i = 0; i < velFieldsLength; i++){
+            field = velFields[i];
+            this.vel = field.process(this.vel, this.coords);
+        }
         this.coords.add(this.vel);
-
-//        this.rotation += this.vel.rotation;
         return (this.life <= this.maxLife);
     };
     window.ParticularParticle = ParticularParticle;
 
+    window.ParticularFieldTypeLife = function(){ return "lifeType"; };
+    window.ParticularFieldTypeLAcc = function(){ return "accType"; };
+    window.ParticularFieldTypeVel = function(){ return "velType"; };
+
 //ParticularLifespanField
-    function ParticularLifespanField() {}
+    function ParticularLifespanField() {
+        this.type = ParticularFieldTypeLife();
+    }
     ParticularLifespanField.prototype.process = function (life, time) {
         life +=  time/1000;
         return life;
@@ -246,6 +282,7 @@ if (window.requestAnimFrame === undefined) {
 
 //ParticularEmissionImpulseField
     function ParticularEmissionImpulseField(speed, type, spread) {
+        this.type = ParticularFieldTypeLAcc();
         this.speed = speed;
         this.type = type;
         this.spread = spread;
@@ -270,6 +307,7 @@ if (window.requestAnimFrame === undefined) {
 
 //ParticularDirectionalSpreadField
     function ParticularDirectionalSpreadField(percent, vector) {
+        this.type = ParticularFieldTypeLAcc();
         this.percent = (percent !== undefined) ? percent : 0;
         this.vector = (vector !== undefined) ? vector : ParticularPoint2D.X_VEC();
     }

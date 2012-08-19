@@ -9,7 +9,7 @@
     };
     ParticularStageCanvasRenderContext.prototype.render = function (node) {
         if (node.renderContext.activeAsset !== undefined) {
-            var angle = node.rotation * Math.PI / 180;
+            var angle = (node.coords.rotation * Math.PI / 180) | 0;
             var x = (node.coords.x) | 0; //(0.5 + node.coords.x) << 0;
             var y = (node.coords.y) | 0; //(0.5 + node.coords.y) << 0;
             this.stage.globalAlpha = node.renderContext.alpha;
