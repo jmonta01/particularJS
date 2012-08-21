@@ -1,7 +1,7 @@
 (function (window) {
 //ParticularGravityField
-    function ParticularGravityField(force, vector) {
-        this.type = ParticularFieldTypeVel()
+    function ParticularGravityField(type, force, vector) {
+        this.type = type;
         this.force = (force !== undefined) ? force : 0.25;
         this.vector = (vector !== undefined) ? vector : ParticularPoint2D.Y_VEC();
     }
@@ -19,8 +19,8 @@
     window.ParticularGravityField = ParticularGravityField;
 
 //ParticularFrictionField
-    function ParticularFrictionField(forceX, forceY) {
-        this.type = ParticularFieldTypeVel()
+    function ParticularFrictionField(type, forceX, forceY) {
+        this.type = type;
         this.force = new ParticularPoint2D();
         this.force.x = (forceX !== undefined) ? forceX : 0.9;
         this.force.y = (forceY !== undefined) ? forceY : 0.9;

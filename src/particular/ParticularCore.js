@@ -30,7 +30,7 @@ if (window.requestAnimFrame === undefined) {
         this.rotation -= point.rotation;
     };
     ParticularPoint2D.prototype.toString = function () {
-        return "x: " + this.x + ", y: " + this.y+ ", rotation: " + this.rotation;
+        return "x: " + this.x + ", y: " + this.y + ", rotation: " + this.rotation;
     };
     ParticularPoint2D.prototype.clone = function () {
         return new ParticularPoint2D(this.x, this.y, this.rotation);
@@ -44,6 +44,10 @@ if (window.requestAnimFrame === undefined) {
     function ParticularConfigProperties() {}
     ParticularConfigProperties.DIRECTIONAL = function () { return "directional"; };
     ParticularConfigProperties.OMNI = function () { return "omni"; };
+    ParticularConfigProperties.FIELD_TYPE_LIFE = function () { return "lifeType"; };
+    ParticularConfigProperties.FIELD_TYPE_ACC = function () { return "accType"; };
+    ParticularConfigProperties.FIELD_TYPE_VEL = function () { return "velType"; };
+
     ParticularConfigProperties.prototype.coords = new ParticularPoint2D();
     ParticularConfigProperties.prototype.rotation = 0;
     ParticularConfigProperties.prototype.type =  ParticularConfigProperties.DIRECTIONAL();
@@ -99,21 +103,21 @@ if (window.requestAnimFrame === undefined) {
         this.fields = {
             lifeFields: [lifespanField],
             accFields: [impulseField],
-            velFields: [],
-        }
-        if(userFields) {
-            while(userFields.length > 0){
+            velFields: []
+        };
+        if (userFields) {
+            while (userFields.length > 0) {
                 var field = userFields.pop();
-                switch(field.type){
-                    case ParticularFieldTypeLife():
-                            this.fields.lifeFields.push(field);
-                        break;
-                    case ParticularFieldTypeLAcc():
-                            this.fields.accFields.push(field);
-                        break;
-                    case ParticularFieldTypeVel():
-                            this.fields.velFields.push(field);
-                        break;
+                switch (field.type) {
+                case ParticularConfigProperties.FIELD_TYPE_LIFE():
+                    this.fields.lifeFields.push(field);
+                    break;
+                case ParticularConfigProperties.FIELD_TYPE_ACC():
+                    this.fields.accFields.push(field);
+                    break;
+                case ParticularConfigProperties.FIELD_TYPE_VEL():
+                    this.fields.velFields.push(field);
+                    break;
                 }
 
             }
@@ -169,19 +173,19 @@ if (window.requestAnimFrame === undefined) {
     }
     function tick() {
         calcFPS();
+        var interval = 1 / fpsCounter.fps, count = emitterContext.properties.rate / fpsCounter.fps;
         if (running === true && fpsCounter.fps > 0) {
-            var count, interval = 1 / fpsCounter.fps, count = emitterContext.properties.rate / fpsCounter.fps;
-                if (count > 0) {
-                    while (count > 0) {
-                        append();
-                        count -= 1;
-                    }
-                } else {
+            if (count > 0) {
+                while (count > 0) {
                     append();
+                    count -= 1;
                 }
+            } else {
+                append();
+            }
 
         }
-        update(interval*1000);
+        update(interval * 1000);
         window.requestAnimFrame(tick);
     }
     function calcFPS() {
@@ -194,15 +198,7 @@ if (window.requestAnimFrame === undefined) {
             fpsCounter.frames += 1;
         }
     }
-
-    if (Math.randomFromTo === undefined) {
-        Math.randomFromTo = function (from, to) {
-            return Math.floor(Math.random() * (to - from + 1) + from);
-        };
-    }
-
     window.ParticularEmitter = ParticularEmitter;
-
 
 //ParticularParticle
     function ParticularParticle(renderContext) {
@@ -216,7 +212,7 @@ if (window.requestAnimFrame === undefined) {
     }
     ParticularParticle.prototype.reset = function () {
         this.fired = false;
-        this.randomSeed.x = this.randomSeed.y = this.accel.x = this.accel.y = this.accel.rotation = this.vel.x = this.vel.y = this.vel.rotation = this.coords.x = this.coords.y = this.coords.rotation = this.life = this.randomSeedX =  this.randomSeedY = 0;
+        this.randomSeed.x = this.randomSeed.y = this.accel.x = this.accel.y = this.accel.rotation = this.vel.x = this.vel.y = this.vel.rotation = this.coords.x = this.coords.y = this.coords.rotation = this.life = 0;
     };
     ParticularParticle.prototype.init = function (props) {
         this.coords.x = props.coords.x;
@@ -230,34 +226,31 @@ if (window.requestAnimFrame === undefined) {
         this.renderContext.reset();
     };
     ParticularParticle.prototype.update = function (fields, time) {
-        var i, field, 
-        lifeFields = fields.lifeFields, lifeFieldsLength = lifeFields.length,
-        accFields = fields.accFields, accFieldsLength = accFields.length, 
-        velFields = fields.velFields, velFieldsLength = velFields.length;
-        for(i = 0; i < lifeFieldsLength; i++){
+        var i, field, lifeFields = fields.lifeFields, lifeFieldsLength = lifeFields.length, accFields = fields.accFields, accFieldsLength = accFields.length, velFields = fields.velFields, velFieldsLength = velFields.length;
+        for (i = 0; i < lifeFieldsLength; i++) {
             field = lifeFields[i];
             if (field instanceof ParticularLifespanField) {
                 this.life = field.process(this.life, time);
-            }else{
-                //process user life fields if any
+            } else {
+                this.life = field.process(this.life, time);
             }
         }
         this.renderContext.updatePhase(this.life, this.maxLife);
-        for(i = 0; i < accFieldsLength; i++){
+        for (i = 0; i < accFieldsLength; i++) {
             field = accFields[i];
             if (field instanceof ParticularEmissionImpulseField) {
-                if (this.fired === false) {
+                if (this.fired) {
+                    this.accel.x = this.accel.y = 0;
+                } else {
                     this.accel = field.process(this.accel, this.speedRandom, this.randomSeed, this.angle, this.maxLife);
                     this.fired = true;
-                } else {
-                    this.accel.x = this.accel.y = 0;
-                }                
-            }else{
+                }
+            } else {
                 this.accel = field.process(this.accel, this.coords);
             }
         }
         this.vel.add(this.accel);
-        for(i = 0; i < velFieldsLength; i++){
+        for (i = 0; i < velFieldsLength; i++) {
             field = velFields[i];
             this.vel = field.process(this.vel, this.coords);
         }
@@ -266,23 +259,19 @@ if (window.requestAnimFrame === undefined) {
     };
     window.ParticularParticle = ParticularParticle;
 
-    window.ParticularFieldTypeLife = function(){ return "lifeType"; };
-    window.ParticularFieldTypeLAcc = function(){ return "accType"; };
-    window.ParticularFieldTypeVel = function(){ return "velType"; };
-
 //ParticularLifespanField
     function ParticularLifespanField() {
-        this.type = ParticularFieldTypeLife();
+        this.type = ParticularConfigProperties.FIELD_TYPE_LIFE();
     }
     ParticularLifespanField.prototype.process = function (life, time) {
-        life +=  time/1000;
+        life +=  time / 1000;
         return life;
     };
     window.ParticularLifespanField = ParticularLifespanField;
 
 //ParticularEmissionImpulseField
     function ParticularEmissionImpulseField(speed, type, spread) {
-        this.type = ParticularFieldTypeLAcc();
+        this.type = ParticularConfigProperties.FIELD_TYPE_ACC();
         this.speed = speed;
         this.type = type;
         this.spread = spread;
@@ -307,11 +296,10 @@ if (window.requestAnimFrame === undefined) {
 
 //ParticularDirectionalSpreadField
     function ParticularDirectionalSpreadField(percent, vector) {
-        this.type = ParticularFieldTypeLAcc();
+        this.type = ParticularConfigProperties.FIELD_TYPE_ACC();
         this.percent = (percent !== undefined) ? percent : 0;
         this.vector = (vector !== undefined) ? vector : ParticularPoint2D.X_VEC();
     }
-
     window.ParticularDirectionalSpreadField = ParticularDirectionalSpreadField;
 
 //ParticularObjectPoolNode
@@ -370,6 +358,4 @@ if (window.requestAnimFrame === undefined) {
         node.next = tail;
     };
     window.ParticularObjectPool = ParticularObjectPool;
-
-
 }(window));

@@ -3,8 +3,8 @@
 <head>
     <title>Sparkler</title>
     <script src="js/particular/ParticularContexts.min.js"></script>
-    <script src="../src/particular/ParticularExts.js"></script>
-    <script src="../src/particular/ParticularCore.js"></script>
+    <script src="js/particular/ParticularExts.min.js"></script>
+    <script src="js/particular/ParticularCore.min.js"></script>
     <script type="text/javascript">
         var canvas, context, emitter, dragging = false;
 
@@ -37,9 +37,9 @@
                     {   x:canvas.width/2, y:100,
                         type:ParticularConfigProperties.OMNI(),
                         rate:700, speed:2, speedRandom:1, angle:-90, spread:1,
-                        lifeSpan:2, lifeSpanRandom:1},
+                        lifeSpan:.75, lifeSpanRandom:1},
                     [
-                        new ParticularGravityField(0.1, ParticularPoint2D.Y_VEC())
+                        new ParticularGravityField(ParticularConfigProperties.FIELD_TYPE_VEL(), 0.1, ParticularPoint2D.Y_VEC())
                     ]
             );
             emitter.start();
