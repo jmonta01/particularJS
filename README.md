@@ -1,10 +1,13 @@
 # particularJS
 ============
 
-A particle engine for html5. Go to http://particularjs.com for a more detailed getting started and some demos.
+A lightweight, modular, extensible, dependency free, doubly linked, object pooled particle engine for html5 canvas and beyond
+
+Go to http://particularjs.com for more details on how to get up and running with particularjs.
 
 ## Getting Started
-ParticularJS was built from the ground up to have a low barrier of entry, at the same time allow for deep customability. Below are a couple of code samples to illustrate both ease of use and how deep a user can customize it.
+ParticularJS was built from the ground up to have a low barrier of entry, at the same time allow for deep customability. 
+Below is a code samples to get you started quickly.
 
 
     <!DOCTYPE html>
@@ -47,3 +50,56 @@ ParticularJS was built from the ground up to have a low barrier of entry, at the
         </canvas>
       </body>
     </html>
+    
+    
+## Extending
+ParticularJS utilizes a common development interface that allows for deep customization and extendability. Below are a couple of examples of how to extend ParticularJS.    
+
+### Creating a Gravity Field
+
+    <script>
+      //<![CDATA[
+        (function (window) {
+          //ParticularGravityField
+        
+          function ParticularGravityField(force, vector) {
+            this.force = (force !== undefined) ? force : 0.25;
+            this.vector = (vector !== undefined) ? vector : ParticularPoint2D.Y_VEC();
+          }
+          ParticularGravityField.prototype.process = function (vel) {
+            switch (this.vector) {
+              case ParticularPoint2D.X_VEC():
+              vel.x += this.force;
+              break;
+            case ParticularPoint2D.Y_VEC():
+              vel.y += this.force;
+              break;
+            }
+            return vel;
+          };
+          window.ParticularGravityField = ParticularGravityField;
+        }(window));
+      //]]>
+    </script>
+
+### Creating a Friction Field
+
+    <script>
+      //<![CDATA[
+        (function (window) {
+        //ParticularFrictionField
+            function ParticularFrictionField(forceX, forceY) {
+                this.force = new ParticularPoint2D();
+                this.force.x = (forceX !== undefined) ? forceX : 0.9;
+                this.force.y = (forceY !== undefined) ? forceY : 0.9;
+            }
+            ParticularFrictionField.prototype.process = function (vel) {
+                vel.x *= this.force.x;
+                vel.y *= this.force.y;
+                return vel;
+            };
+            window.ParticularFrictionField = ParticularFrictionField;
+        
+        }(window));
+      //]]>
+    </script>
